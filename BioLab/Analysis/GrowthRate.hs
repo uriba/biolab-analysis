@@ -13,11 +13,8 @@ import Data.Time (UTCTime, NominalDiffTime, diffUTCTime)
 import Statistics.Function (sortBy)
 import Data.Function (on)
 import Control.Arrow ((***))
+import BioLab.Analysis.Types
 
-newtype RawMeasurement = RawMeasurement {mVal :: Double}
-newtype NormalizedMeasurement = NormalizedMeasurement {nmVal :: Double}
-newtype Background = Background {bgVal :: Double}
-newtype DetectionThreshold = DetectionThreshold {dtVal :: Double}
 newtype LogMeasurement = LogMeasurement {lmVal :: Double}
 
 windowSize = 5 -- minimal number of measurements needed to calculate slope
@@ -26,9 +23,6 @@ absoluteToRelativeTime :: V.Vector (UTCTime,a) -> (UTCTime, V.Vector (NominalDif
 absoluteToRelativeTime v = (start, V.map (\(x,y) -> (x `diffUTCTime` start,y)) v)
     where
         start = fst . V.head $ v
-
-normalize :: Background -> DetectionThreshold -> RawMeasurement -> NormalizedMeasurement
-normalize (Background bg) (DetectionThreshold dt) (RawMeasurement rm)= NormalizedMeasurement . max dt $ (rm-bg)
 
 minDoublingTime :: V.Vector (UTCTime,NormalizedMeasurement) -> NominalDiffTime
 minDoublingTime = realToFrac . mean . V.map (realToFrac . snd) . V.take 3 . V.drop 2 . sortBy (compare `on` snd) . doublingTime Nothing

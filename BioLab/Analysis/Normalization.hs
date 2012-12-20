@@ -18,13 +18,16 @@ backgroundFromBlank v = Background . S.mean . U.fromList . take (n `div` 2) . V.
 initSize = 3
 
 normalizeFromInit :: DetectionThreshold -> V.Vector(UTCTime, RawMeasurement) -> V.Vector (UTCTime, NormalizedMeasurement)
-normalizeFromInit t v = V.map (\(x,y) -> (x, normalize (bg_from_init) t y)) v
+normalizeFromInit t v = normalize (bg_from_init) t v
     where
         bg_from_init = Background . S.mean . V.take initSize . sort . V.map (mVal . snd) $ v
 
 knownBackground :: Double -> Background
 knownBackground x = Background x
 
-normalize :: Background -> DetectionThreshold -> RawMeasurement -> NormalizedMeasurement
-normalize (Background bg) (DetectionThreshold dt) (RawMeasurement rm)= NormalizedMeasurement . max dt $ (rm-bg)
+normalizeMeasurement :: Background -> DetectionThreshold -> RawMeasurement -> NormalizedMeasurement
+normalizeMeasurement (Background bg) (DetectionThreshold dt) (RawMeasurement rm)= NormalizedMeasurement . max dt $ (rm-bg)
+
+normalize :: Background -> DetectionThreshold -> V.Vector (UTCTime,RawMeasurement) -> V.Vector (UTCTime, NormalizedMeasurement)
+normalize bg t = V.map (\(x,y) -> (x, normalizeMeasurement bg t y))
 

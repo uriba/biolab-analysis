@@ -1,26 +1,29 @@
-module BioLab.Analysis.Normalization (
+module Biolab.Analysis.Normalization (
     normalize,
+    backgroundFromBlank,
 )
 where
 
-import BioLab.Analysis.Types
+import Biolab.Types (RawMeasurement)
+import Biolab.Analysis.Types
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
 import qualified Statistics.Sample as S
-import Statistics.Function (sort)
+import Data.List (sort)
+import qualified Statistics.Function as SS
 import Data.Time (UTCTime, NominalDiffTime, diffUTCTime)
 
 backgroundFromBlank :: V.Vector (UTCTime,RawMeasurement) -> Background
-backgroundFromBlank v = Background . S.mean . U.fromList . take (n `div` 2) . V.toList . sort . V.map (mVal . snd) $ v
+backgroundFromBlank v = Background . S.mean . U.fromList . take (n `div` 2) . sort . map (mVal . snd) . V.toList $ v
     where
         n = V.length v
 
 initSize = 3
 
-normalizeFromInit :: DetectionThreshold -> V.Vector(UTCTime, RawMeasurement) -> V.Vector (UTCTime, NormalizedMeasurement)
+normalizeFromInit :: DetectionThreshold ->  V.Vector (UTCTime, RawMeasurement) -> V.Vector (UTCTime, NormalizedMeasurement)
 normalizeFromInit t v = normalize (bg_from_init) t v
     where
-        bg_from_init = Background . S.mean . V.take initSize . sort . V.map (mVal . snd) $ v
+        bg_from_init = Background . S.mean . V.take initSize . SS.sort . V.map (mVal . snd) $ v
 
 knownBackground :: Double -> Background
 knownBackground x = Background x

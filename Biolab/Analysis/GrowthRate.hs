@@ -1,4 +1,4 @@
-module BioLab.Analysis.GrowthRate (
+module Biolab.Analysis.GrowthRate (
     minDoublingTime,
     doublingTime,
 )
@@ -13,7 +13,7 @@ import Data.Time (UTCTime, NominalDiffTime, diffUTCTime)
 import Statistics.Function (sortBy)
 import Data.Function (on)
 import Control.Arrow ((***))
-import BioLab.Analysis.Types
+import Biolab.Analysis.Types
 
 newtype LogMeasurement = LogMeasurement {lmVal :: Double}
 

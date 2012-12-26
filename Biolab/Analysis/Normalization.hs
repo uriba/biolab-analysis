@@ -1,6 +1,9 @@
 module Biolab.Analysis.Normalization (
     normalize,
     backgroundFromBlank,
+    backgroundFromBlanks,
+    thresholdFromBlank,
+    thresholdFromBlanks,
 )
 where
 
@@ -14,9 +17,18 @@ import qualified Statistics.Function as SS
 import Data.Time (UTCTime, NominalDiffTime, diffUTCTime)
 
 backgroundFromBlank :: V.Vector (UTCTime,RawMeasurement) -> Background
-backgroundFromBlank v = Background . S.mean . U.fromList . take (n `div` 2) . sort . map (mVal . snd) . V.toList $ v
+backgroundFromBlank v = Background . S.mean . V.take (n `div` 2) . SS.sort . V.map (mVal . snd) $ v
     where
         n = V.length v
+
+backgroundFromBlanks = Background . S.mean . V.fromList . map (bgVal . backgroundFromBlank)
+
+thresholdBuffer = 3
+
+thresholdFromBlank :: V.Vector (UTCTime,RawMeasurement) -> DetectionThreshold
+thresholdFromBlank = DetectionThreshold . (thresholdBuffer *) . S.stdDev . U.fromList . map (mVal . snd) . V.toList
+
+thresholdFromBlanks = DetectionThreshold . S.mean . V.fromList . map (dtVal . thresholdFromBlank)
 
 initSize = 3
 

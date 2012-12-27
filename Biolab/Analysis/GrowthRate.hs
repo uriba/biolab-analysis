@@ -14,15 +14,11 @@ import Statistics.Function (sortBy)
 import Data.Function (on)
 import Control.Arrow ((***))
 import Biolab.Analysis.Types
+import Biolab.Analysis.Utils
 
 newtype LogMeasurement = LogMeasurement {lmVal :: Double}
 
 windowSize = 5 -- minimal number of measurements needed to calculate slope
-
-absoluteToRelativeTime :: V.Vector (UTCTime,a) -> (UTCTime, V.Vector (NominalDiffTime,a))
-absoluteToRelativeTime v = (start, V.map (\(x,y) -> (x `diffUTCTime` start,y)) v)
-    where
-        start = fst . V.head $ v
 
 minDoublingTime :: V.Vector (UTCTime,NormalizedMeasurement) -> Maybe NominalDiffTime
 minDoublingTime = result . V.map (realToFrac . snd) . V.take 3 . V.drop 2 . sortBy (compare `on` snd) . V.map (\(x,y) -> (x,fromJust y)) . V.filter (isJust . snd) . doublingTime Nothing

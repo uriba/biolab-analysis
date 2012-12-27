@@ -14,7 +14,7 @@ import qualified Data.Vector.Unboxed as U
 import qualified Statistics.Sample as S
 import Data.List (sort)
 import qualified Statistics.Function as SS
-import Data.Time (UTCTime, NominalDiffTime, diffUTCTime)
+import Data.Time (UTCTime)
 
 backgroundFromBlank :: V.Vector (UTCTime,RawMeasurement) -> Background
 backgroundFromBlank v = Background . S.mean . V.take (n `div` 2) . SS.sort . V.map (mVal . snd) $ v

@@ -15,6 +15,6 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  exposed-modules:     Biolab.Analysis.GrowthRate, Biolab.Analysis.Normalization, Biolab.Analysis.Types
+  exposed-modules:     Biolab.Analysis.GrowthRate, Biolab.Analysis.Normalization, Biolab.Analysis.Types, Biolab.Analysis.Utils, Biolab.Analysis.ExpressionLevel
   -- other-modules:       
   build-depends:       base ==4.5.*, statistics ==0.10.*, vector ==0.10.*, statistics-linreg ==0.2.3.*, biolab-types ==0.1.*, time ==1.4.*

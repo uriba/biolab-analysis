@@ -5,8 +5,7 @@ module Biolab.Analysis.Types (
     NormalizedMeasurement(..),
 )
 where
-import Biolab.Types (RawMeasurement(..))
+import Biolab.Types (RawMeasurement(..), NormalizedMeasurement(..))
 
 newtype Background = Background {bgVal :: Double} deriving Show
 newtype DetectionThreshold = DetectionThreshold {dtVal :: Double} deriving Show
-newtype NormalizedMeasurement = NormalizedMeasurement {nmVal :: Double}

@@ -18,13 +18,13 @@ mesVect :: (ColonySample a) => a NormalizedMeasurement -> V.Vector (NominalDiffT
 mesVect = snd . absoluteToRelativeTime . V.map (\(x,y) -> (x, nmVal y)) . measurements
 
 derivate :: (Num b) => V.Vector (a,b) -> V.Vector (a,b)
-derivate v | V.length v < 2 = error "unable to derivate"
-           | otherwise = V.fromList . map head_diff . takeWhile ((2>=) . V.length) . iterate V.tail $ v
+derivate v | V.length v <= 2 = error "unable to derivate"
+           | otherwise = V.fromList . map head_diff . takeWhile ((2<=) . V.length) . iterate V.tail $ v
     where
         head_diff v = (fst . V.head $ v, (snd . V.head . V.tail $ v) - (snd . V.head $ v)) 
 
 integrate :: (Num b) => V.Vector (a,b) -> V.Vector (a,b)
-integrate v | V.length v < 2 = error "unable to integrate"
-           | otherwise = V.fromList . map head_sum . takeWhile ((2>=) . V.length) . iterate V.tail $ v
+integrate v | V.length v <= 2 = error "unable to integrate"
+           | otherwise = V.fromList . map head_sum . takeWhile ((2<=) . V.length) . iterate V.tail $ v
     where
         head_sum v = (fst . V.head $ v, (snd . V.head . V.tail $ v) + (snd . V.head $ v)) 

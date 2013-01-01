@@ -11,8 +11,10 @@ import Biolab.Analysis.Utils
 expressionLevel :: Maybe Int -> NormalizedAbsorbance -> NormalizedFluorescence -> V.Vector (NominalDiffTime, Double)
 expressionLevel mws odv flv = V.zipWith (\x y -> (fst x, snd x / snd y)) fl_diff od_sum
     where
-        fl_diff = derivate . mesVect $ flv
-        od_sum = integrate . mesVect $ odv
+        fl_diff = exponentialDerivative . map V.take 6 . takeWhile ((6 <=) . V.size) .  iterate V.tail . mesVect $ flv
+        od_sum = exponentialApproximation . mesVect $ odv
+        -- fl_diff = derivate . mesVect $ flv
+        -- od_sum = integrate . mesVect $ odv
 
 mesVect :: (ColonySample a) => a NormalizedMeasurement -> V.Vector (NominalDiffTime,Double)
 mesVect = snd . absoluteToRelativeTime . V.map (\(x,y) -> (x, nmVal y)) . measurements

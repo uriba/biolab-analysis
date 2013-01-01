@@ -34,8 +34,6 @@ doublingTime mws mes = V.fromList . map (doublingTimeWindow window_size . V.take
 doublingTimeWindow :: Int -> V.Vector (Double,Double) -> (NominalDiffTime,Maybe NominalDiffTime)
 doublingTimeWindow window_size v = (realToFrac . fst $ v ! (window_size `div` 2),calcDoublingTime v)
 
-grEstimationParameters = defaultEstimationParameters {outlierFraction = 0.4}
-
 calcDoublingTime :: V.Vector (Double,Double) -> Maybe NominalDiffTime
 calcDoublingTime xys = fmap (realToFrac . (1/)) . gr . snd . nonRandomRobustFit grEstimationParameters xs $ ys
     where

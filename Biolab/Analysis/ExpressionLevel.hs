@@ -4,15 +4,22 @@ module Biolab.Analysis.ExpressionLevel (
 where
 
 import qualified Data.Vector as V
+import Data.Vector ((!))
+import qualified Data.Vector.Unboxed as U
 import Data.Time (UTCTime, NominalDiffTime)
 import Biolab.Types
 import Biolab.Analysis.Utils
 
+windowSize = 4
 expressionLevel :: Maybe Int -> NormalizedAbsorbance -> NormalizedFluorescence -> V.Vector (NominalDiffTime, Double)
 expressionLevel mws odv flv = V.zipWith (\x y -> (fst x, snd x / snd y)) fl_diff od_sum
     where
-        fl_diff = exponentialDerivative . map V.take 6 . takeWhile ((6 <=) . V.size) .  iterate V.tail . mesVect $ flv
-        od_sum = exponentialApproximation . mesVect $ odv
+        fl_diff_vec = map (V.fromList . U.toList) $ zipWith exponentialDerivative (map (U.fromList . V.toList . V.map realToFrac) flxs) (map (U.fromList . V.toList) flys)
+        (flxs,flys) = unzip . map (V.unzip . V.take windowSize) . takeWhile ((windowSize <=) . V.length) .  iterate V.tail . mesVect $ flv
+        od_sum_vec = map (V.fromList . U.toList) $ zipWith exponentialApproximation (map (U.fromList . V.toList . V.map realToFrac) odxs) (map (U.fromList . V.toList) odys)
+        (odxs,odys) = unzip . map (V.unzip . V.take windowSize) . takeWhile ((windowSize <=) . V.length) .  iterate V.tail . mesVect $ odv 
+        fl_diff = V.fromList . zipWith (\xs ys -> (xs ! (windowSize `div` 2), ys ! (windowSize `div` 2))) flxs $ fl_diff_vec
+        od_sum = V.fromList . zipWith (\xs ys -> (xs ! (windowSize `div` 2), ys ! (windowSize `div` 2))) odxs $ od_sum_vec
         -- fl_diff = derivate . mesVect $ flv
         -- od_sum = integrate . mesVect $ odv
 

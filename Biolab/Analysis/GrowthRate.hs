@@ -22,7 +22,7 @@ newtype LogMeasurement = LogMeasurement {lmVal :: Double}
 windowSize = 6 -- minimal number of measurements needed to calculate slope
 
 minDoublingTime :: (ColonySample a) => a NormalizedMeasurement -> Maybe NominalDiffTime
-minDoublingTime = result . V.map (realToFrac . snd) . V.take 3 . V.drop 2 . sortBy (compare `on` snd) . V.map (\(x,y) -> (x,fromJust y)) . V.filter (isJust . snd) . doublingTime Nothing
+minDoublingTime = result . V.map (realToFrac . snd) . V.take 4 . sortBy (compare `on` snd) . V.map (\(x,y) -> (x,fromJust y)) . V.filter (isJust . snd) . doublingTime Nothing
     where result v = if V.null v then Nothing else Just . realToFrac . mean $ v
 
 doublingTime :: (ColonySample a) => Maybe Int -> a NormalizedMeasurement -> V.Vector (NominalDiffTime,Maybe NominalDiffTime)

@@ -22,15 +22,18 @@ backgroundFromBlank v = Background . S.mean . V.take (n `div` 2) . SS.sort . V.m
         n = V.length . measurements $ v
 
 backgroundFromBlanks :: (ColonySample a) => [a RawMeasurement] -> Background
-backgroundFromBlanks = Background . S.mean . V.fromList . map (bgVal . backgroundFromBlank)
-
+backgroundFromBlanks ms
+    | null ms = error "No blank values given"
+    | otherwise = Background . S.mean . V.fromList . map (bgVal . backgroundFromBlank) $ ms
 thresholdBuffer = 3
 
 thresholdFromBlank :: (ColonySample a) => a RawMeasurement -> DetectionThreshold
 thresholdFromBlank = DetectionThreshold . (thresholdBuffer *) . S.stdDev . U.fromList . map (mVal . snd) . V.toList . measurements
 
 thresholdFromBlanks :: (ColonySample a) => [a RawMeasurement] -> DetectionThreshold
-thresholdFromBlanks = DetectionThreshold . S.mean . V.fromList . map (dtVal . thresholdFromBlank)
+thresholdFromBlanks ms
+    | null ms = error "No blank values given"
+    | otherwise = DetectionThreshold . S.mean . V.fromList . map (dtVal . thresholdFromBlank) $ ms
 
 initSize = 3
 

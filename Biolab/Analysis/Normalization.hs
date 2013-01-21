@@ -49,5 +49,9 @@ normalizeMeasurement :: Background -> DetectionThreshold -> RawMeasurement -> No
 normalizeMeasurement (Background bg) (DetectionThreshold dt) (RawMeasurement rm)= NormalizedMeasurement . max dt $ (rm-bg)
 
 normalize :: (ColonySample a) => Background -> DetectionThreshold -> a RawMeasurement-> a NormalizedMeasurement
-normalize bg t = process (V.map (\(x,y) -> (x, normalizeMeasurement bg t y)))
+normalize bg t = process (\v -> V.reverse . trim_prefix . V.reverse . trim_suffix . adjust_measurements $ v)
+    where
+        adjust_measurements = V.map (\(x,y) -> (x, normalizeMeasurement bg t y))
+        trim_suffix v = V.takeWhile ((<= (V.maximum . V.map snd $ v)) . snd) v
+        trim_prefix = V.takeWhile ((> (dtVal t)) . nmVal . snd)
 

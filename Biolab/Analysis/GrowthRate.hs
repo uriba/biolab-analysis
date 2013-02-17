@@ -26,13 +26,13 @@ minDoublingTime = result . V.map (realToFrac . snd) . V.take 4 . sortBy (compare
     where result v = if V.null v then Nothing else Just . realToFrac . mean $ v
 
 doublingTime :: (ColonySample a) => Maybe Int -> a NormalizedMeasurement -> V.Vector (NominalDiffTime,Maybe NominalDiffTime)
-doublingTime mws mes = V.fromList . map (doublingTimeWindow window_size . V.take window_size) . takeWhile (\x -> V.length x >= window_size) . iterate V.tail . V.map (realToFrac *** (logBase 2 . nmVal)) $ dmes
+doublingTime mws mes = V.fromList . map (doublingTimeWindow . V.take window_size) . takeWhile (\x -> V.length x >= window_size) . iterate V.tail . V.map (realToFrac *** (logBase 2 . nmVal)) . trim $ dmes
     where
         (start,dmes) = absoluteToRelativeTime . measurements $ mes
         window_size = fromMaybe windowSize mws
 
-doublingTimeWindow :: Int -> V.Vector (Double,Double) -> (NominalDiffTime,Maybe NominalDiffTime)
-doublingTimeWindow window_size v = (realToFrac . fst $ v ! (window_size `div` 2),calcDoublingTime v)
+doublingTimeWindow :: V.Vector (Double,Double) -> (NominalDiffTime,Maybe NominalDiffTime)
+doublingTimeWindow v = (realToFrac . fst $ v ! 0 {-(window_size `div` 2) -},calcDoublingTime v)
 
 calcDoublingTime :: V.Vector (Double,Double) -> Maybe NominalDiffTime
 calcDoublingTime xys = fmap (realToFrac . (1/)) . gr . snd . nonRandomRobustFit grEstimationParameters xs $ ys

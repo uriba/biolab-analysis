@@ -1,5 +1,6 @@
 module Biolab.Analysis.Utils (
     absoluteToRelativeTime,
+    trim,
     grEstimationParameters,
     exponentialApproximation,
     exponentialDerivative,
@@ -17,6 +18,15 @@ absoluteToRelativeTime :: V.Vector (UTCTime,a) -> (UTCTime, V.Vector (NominalDif
 absoluteToRelativeTime v = (start, V.map (\(x,y) -> (x `diffUTCTime` start,y)) v)
     where
         start = fst . V.head $ v
+
+trim :: (Ord a) => V.Vector (NominalDiffTime,a) -> V.Vector (NominalDiffTime,a)
+trim = V.reverse . trim_prefix . V.reverse . trim_suffix . remove_initial_spike
+    where
+        trim_suffix v = V.takeWhile ((< (V.maximum . V.map snd $ v)) . snd) v
+        trim_prefix v = V.takeWhile ((>  (V.minimum . V.map snd $ v)) . snd) v
+        remove_initial_spike v = if (V.maximum . V.map snd $ v) == (V.maximum . V.map snd . V.takeWhile ((< 4800) . realToFrac . fst) $ v)
+                                        then V.tail . V.dropWhile ((< (V.maximum . V.map snd $ v)) . snd) $ v
+                                        else v
 
 grEstimationParameters = defaultEstimationParameters {outlierFraction = 0.4}
 

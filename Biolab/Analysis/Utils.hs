@@ -20,11 +20,12 @@ absoluteToRelativeTime v = (start, V.map (\(x,y) -> (x `diffUTCTime` start,y)) v
         start = fst . V.head $ v
 
 trim :: (Ord a) => V.Vector (NominalDiffTime,a) -> V.Vector (NominalDiffTime,a)
-trim = V.reverse . trim_prefix . V.reverse . trim_suffix . remove_initial_spike
-    where
-        trim_suffix v = V.takeWhile ((< (V.maximum . V.map snd $ v)) . snd) v
-        trim_prefix v = V.takeWhile ((>  (V.minimum . V.map snd $ v)) . snd) v
-        remove_initial_spike v = if (V.maximum . V.map snd $ v) == (V.maximum . V.map snd . V.takeWhile ((< 4800) . realToFrac . fst) $ v)
+trim v  | V.null v = v
+        | otherwise = V.reverse . trim_prefix . V.reverse . trim_suffix . remove_initial_spike $ v
+        where
+            trim_suffix v = V.takeWhile ((< (V.maximum . V.map snd $ v)) . snd) v
+            trim_prefix v = V.takeWhile ((>  (V.minimum . V.map snd $ v)) . snd) v
+            remove_initial_spike v = if (V.maximum . V.map snd $ v) == (V.maximum . V.map snd . V.takeWhile ((< 4800) . realToFrac . fst) $ v)
                                         then V.tail . V.dropWhile ((< (V.maximum . V.map snd $ v)) . snd) $ v
                                         else v
 

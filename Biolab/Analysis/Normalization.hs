@@ -1,5 +1,6 @@
 module Biolab.Analysis.Normalization (
     normalize,
+    normalizeFromInit,
     backgroundFromBlank,
     backgroundFromBlanks,
     thresholdFromBlank,
@@ -17,7 +18,7 @@ import qualified Statistics.Function as SS
 import Data.Time (UTCTime)
 
 backgroundFromBlank :: (ColonySample a) => a RawMeasurement -> Background
-backgroundFromBlank v = Background . S.mean . V.take (n `div` 2) . SS.sort . V.map (mVal . snd) . measurements $ v
+backgroundFromBlank v = calcBG . V.take (n `div` 2) . SS.sort . V.map (mVal . snd) . measurements $ v
     where
         n = V.length . measurements $ v
 
@@ -25,22 +26,29 @@ backgroundFromBlanks :: (ColonySample a) => [a RawMeasurement] -> Background
 backgroundFromBlanks ms
     | null ms = error "No blank values given"
     | otherwise = Background . S.mean . V.fromList . map (bgVal . backgroundFromBlank) $ ms
+
 thresholdBuffer = 3
 
 thresholdFromBlank :: (ColonySample a) => a RawMeasurement -> DetectionThreshold
-thresholdFromBlank = DetectionThreshold . (thresholdBuffer *) . S.stdDev . U.fromList . map (mVal . snd) . V.toList . measurements
+thresholdFromBlank = calcTH . V.map (mVal . snd) . measurements
 
 thresholdFromBlanks :: (ColonySample a) => [a RawMeasurement] -> DetectionThreshold
 thresholdFromBlanks ms
     | null ms = error "No blank values given"
     | otherwise = DetectionThreshold . S.mean . V.fromList . map (dtVal . thresholdFromBlank) $ ms
 
-initSize = 3
+initSize = 6
 
-normalizeFromInit :: (ColonySample a) => DetectionThreshold -> a RawMeasurement-> a NormalizedMeasurement
-normalizeFromInit t v = normalize (bg_from_init) t v
+calcBG = Background . S.mean
+
+calcTH = DetectionThreshold . (thresholdBuffer *) . S.stdDev
+
+normalizeFromInit :: (ColonySample a) => a RawMeasurement-> a NormalizedMeasurement
+normalizeFromInit v = normalize (bg_from_init) th_from_init v
     where
-        bg_from_init = Background . S.mean . V.take initSize . SS.sort . V.map (mVal . snd) . measurements $ v
+        bg_from_init = calcBG init_sample
+        th_from_init = calcTH init_sample
+        init_sample = V.take initSize . V.map (mVal . snd) . measurements $ v
 
 knownBackground :: Double -> Background
 knownBackground x = Background x
